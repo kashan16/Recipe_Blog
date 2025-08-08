@@ -1,17 +1,23 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"github.com/kashan16/recipe_blog/backend/db"
+	"github.com/kashan16/recipe_blog/backend/internal/database"
+	"github.com/kashan16/recipe_blog/backend/internal/handlers"
 )
 
 func main() {
-	db.Connect()
-	r := gin.Default()
-	r.GET("/", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{"message": "Welcome to Recipe_Blog"})
+	database.InitDB()
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "Recipe Blog API is up!")
 	})
-	log.Fatal(r.Run(":8081"))
+
+	fmt.Println("Server started at :8080")
+	http.HandleFunc("/api/recipes", handlers.GetRecipeHanlers)
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatal("Server failed : ", err)
+	}
 }
