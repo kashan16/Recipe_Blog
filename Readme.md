@@ -1,164 +1,220 @@
+# 🍳 Recipe Blog — AI-powered Recipe Discovery
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Issues](https://img.shields.io/github/issues/kashan16/Recipe_Blog)](https://github.com/kashan16/Recipe_Blog/issues) [![Build Status](https://img.shields.io/github/actions/workflow/status/kashan16/Recipe_Blog/ci.yml)]()
+
+> **Find, generate, and cook great recipes from the ingredients you already have — powered by AI.**
 
 ---
 
-````markdown
-# 🍳 Recipe Blog
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Build](https://img.shields.io/github/actions/workflow/status/kashan16/Recipe_Blog/ci.yml)](https://github.com/kashan16/Recipe_Blog/actions)
-[![Issues](https://img.shields.io/github/issues/kashan16/Recipe_Blog)](https://github.com/kashan16/Recipe_Blog/issues)
+## 📌 Quick links
 
-> **AI-powered recipe discovery platform** to find, generate, and manage recipes based on available ingredients.  
-> Built with a React TypeScript frontend and Flask backend.
-
----
-
-## 📌 Quick Links
-- [Overview](#-overview)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Getting Started](#-getting-started)
-- [Usage](#-usage)
-- [Documentation](#-documentation)
-- [Contributing](#-contributing)
-- [Roadmap](#-roadmap)
-- [License](#-license)
-
----
-
-## 📖 Overview
-Recipe Blog is a modern cooking companion where you can:
-- Search recipes by name, cuisine, or dietary needs.
-- Input ingredients you have and get AI-powered recipe suggestions.
-- Manage your pantry and favorite recipes.
-- Generate entirely new recipes using AI.
+* [Features](#-features)
+* [Quick Start](#-quick-start)
+* [Tech Stack](#-tech-stack)
+* [Project Structure](#-project-structure)
+* [Usage](#-usage)
+* [Docs](#-docs)
+* [Contributing](#-contributing)
+* [Roadmap](#-roadmap)
+* [License](#-license)
 
 ---
 
 ## 🌟 Features
 
-### Core
-- 🔍 **Smart Recipe Search** — by name, cuisine, or dietary preferences.
-- 🛒 **Ingredient-Based Discovery** — find what you can cook with what you have.
-- 📋 **My Pantry** — manage your ingredient inventory.
-- ❤️ **Favorites System** — save and organize recipes.
+**Core**
 
-### AI-Powered
-- 🤖 **Recipe Generation from Ingredients**.
-- 🔄 **Ingredient Substitutions**.
-- 🎯 **Personalized Recommendations**.
-- ⚡ **Dietary Restriction Filtering**.
+* 🔍 Smart search by name, cuisine, or dietary filters
+* 🧺 "My Pantry" — manage your available ingredients
+* 📄 Recipe pages with instructions, nutrition, and metadata
+* ⭐ Favorites and organized recipe collections
 
+**AI-powered**
 
-## 🛠 Tech Stack
-
-**Frontend**
-- React (TypeScript)
-- Tailwind CSS
-- React Router
-- Axios
-- React Hook Form
-
-**Backend**
-- Flask
-- SQLAlchemy
-- PostgreSQL
-- Redis
-- JWT Auth
-- OpenAI API
+* 🤖 Generate complete recipes from a list of ingredients
+* 🔁 Suggest ingredient substitutions and variations
+* 🎯 Personalized recommendations and dietary filtering
+* ⚡ Caching for fast AI responses (Redis)
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start
+
+Get the app running locally in \~5 minutes.
 
 ### Prerequisites
-- Node.js ≥ 16
-- Python ≥ 3.8
-- PostgreSQL ≥ 12
-- Redis (for caching)
-- OpenAI API key
 
-### Installation
+* Node.js >= 16
+* Python >= 3.8
+* PostgreSQL >= 12
+* Redis (optional but recommended for AI caching)
+* OpenAI API key (for AI features)
 
-Clone the repo:
+### Clone
+
 ```bash
 git clone https://github.com/kashan16/Recipe_Blog.git
 cd Recipe_Blog
-````
+```
+
+### Backend (minimal)
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate      # macOS / Linux
+# venv\Scripts\activate     # Windows
+pip install -r requirements.txt
+cp .env.example .env          # edit .env values
+flask db upgrade              # apply migrations
+flask run                     # runs at http://localhost:5000
+```
+
+### Frontend (minimal)
+
+```bash
+cd frontend
+npm install
+npm start                     # runs at http://localhost:3000
+```
+
+**API base URLs**
+
+* Frontend: `http://localhost:3000`
+* Backend: `http://localhost:5000`
+
+---
+
+## ⚙️ Environment (example `.env`)
+
+Place these in `/backend/.env` (use `.env.example` as a template).
+
+```env
+FLASK_APP=app.py
+FLASK_ENV=development
+DATABASE_URL=postgresql://username:password@localhost/recipe_blog
+REDIS_URL=redis://localhost:6379
+OPENAI_API_KEY=sk-...
+JWT_SECRET_KEY=your_jwt_secret_key
+```
+
+---
+
+## 🗂 Project Structure
+
+```
+Recipe_Blog/
+├── frontend/                 # React + TypeScript SPA
+│   ├── src/
+│   ├── public/
+│   └── package.json
+├── backend/                  # Flask API
+│   ├── app/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── __init__.py
+│   ├── migrations/
+│   └── requirements.txt
+├── docs/                     # API, DB schema, screenshots
+└── README.md
+```
+
+> Move long reference material into `docs/` (API reference, DB schema, deployment notes).
+
+---
+
+## 🔌 API / Integration (quick)
+
+Full API reference is in `docs/API.md`. Keep the README lean — put only examples here.
+
+**AI Recipe Generation (example)**
+
+```
+POST /api/ai/generate-recipe
+{
+  "ingredients": ["chicken", "rice", "broccoli"],
+  "dietary_restrictions": ["gluten-free"],
+  "cuisine_type": "asian",
+  "cooking_time": "30"
+}
+```
+
+Response: JSON recipe object with `title`, `ingredients`, `instructions`, `nutrition`.
+
+---
+
+## 🧪 Testing
 
 **Backend**
 
 ```bash
 cd backend
-python -m venv venv
-source venv/bin/activate   # macOS/Linux
-venv\Scripts\activate      # Windows
-pip install -r requirements.txt
-cp .env.example .env
-flask db upgrade
-flask run
+pytest
 ```
 
 **Frontend**
 
 ```bash
 cd frontend
-npm install
-npm start
+npm test
 ```
-
-Frontend: [http://localhost:3000](http://localhost:3000)
-Backend API: [http://localhost:5000](http://localhost:5000)
 
 ---
 
-## 📱 Usage
+## 📦 Deployment (short)
 
-**For Users**
+**Backend**: export env vars in your host (Railway, Render, Heroku). Build `requirements.txt` with `pip freeze > requirements.txt` and point the platform to `backend/`.
 
-1. Sign up / log in.
-2. Add ingredients to **My Pantry**.
-3. Get AI suggestions or search recipes.
-4. Save favorites for later.
+**Frontend**: `npm run build` then deploy `frontend/build` to Vercel, Netlify, or static hosting.
 
+Add a full `docs/deploy.md` for provider-specific instructions.
+
+---
 
 ## 🤝 Contributing
 
-We welcome contributions!
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for:
+We welcome contributions! Keep the README focused — add contribution rules to `CONTRIBUTING.md`.
 
-* Setting up your dev environment
-* Coding style guidelines
-* PR process
+Minimal guidance:
+
+1. Fork the repo
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Run tests & linters
+4. Open a pull request with a clear description
+
+See `CONTRIBUTING.md` for coding style, commit message format, and PR checklist.
 
 ---
 
 ## 🗺 Roadmap
 
-* [ ] Mobile app development
+* [ ] Mobile app (React Native)
 * [ ] Recipe video integration
-* [ ] Social sharing features
-* [ ] Meal planning calendar
+* [ ] Meal planning & calendar
 * [ ] Grocery delivery integration
-* [ ] Voice command support
-* [ ] Nutrition tracking
-* [ ] Community recipe sharing
+* [ ] Nutrition tracking & analytics
 
 ---
 
 ## 📄 License
 
-MIT © [Kashan](https://github.com/kashan16)
+MIT License — see [LICENSE](LICENSE)
 
 ---
 
-## 🙏 Acknowledgments
+## 👥 Authors & Acknowledgments
 
-* OpenAI for AI recipe generation
-* Food APIs and recipe data providers
-* Open-source libraries and tools
+**Kashan** — [@kashan16](https://github.com/kashan16)
+
+Thanks to OpenAI for the generative APIs and the open-source ecosystem for tooling.
 
 ---
 
-```
+## 📬 Support
 
+If you find issues or want to request features:
 
+* Search or open an issue: `https://github.com/kashan16/Recipe_Blog/issues`
+
+Happy cooking! 🍽️
