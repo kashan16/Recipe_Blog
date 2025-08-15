@@ -1,53 +1,81 @@
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
 import os
-import requests
+from datetime import timedelta
 
-ai_bp = Blueprint("ai", __name__)
-
-# Gemini API config
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = "gemini-1.5-flash"  # or gemini-1.5-pro
-
-def generate_recipe_idea(prompt: str) -> str:
-    """
-    Calls Google Gemini API to generate a recipe idea based on the given prompt.
-    """
-    if not GEMINI_API_KEY:
-        raise ValueError("GEMINI_API_KEY not set in environment variables.")
-
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
-
-    headers = {"Content-Type": "application/json"}
-    payload = {
-        "contents": [
-            {
-                "parts": [{"text": prompt}]
-            }
-        ]
+class Config:
+    """Base configuration"""
+    SECRET_KEY = os.getenv('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pre_pool_ping' : True,
+        'pool_recycle' : 300,
+        'pool_timeout' : 20,
+        'max_overflow' : 0 
     }
+    
+    # Supabase Configuration
+    SUPABASE_URL = os.environ.get('SUPABASE_URL')
+    SUPABASE_SERVICE_KEY = os.environ.get('SUPABASE_SERVICE_KEY')
+    
+    # Database URL for Supabase
+    SQLALCHEMY_DATABASE_URI = os.environ.get('SUPABASE_DB_URL')
+    
+    #JWT Configuration
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    
+    # File Upload Configuration
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
+    UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') or 'uploads'
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    
+    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+    RAZOR_PAY_KEY_ID = os.environ.get('RAZOR_PAY_KEY_ID')
+    RAZOR_PAY_SECRET = os.environ.get('RAZOR_PAY_SECRET')
+    
+    REDIS_URL = os.environ.get('REDIS_URL') 
+    
+    RATELIMIT_STORAGE_URL = REDIS_URL
+    
+    @staticmethod
+    def init_app(app):
+        pass
+    
+class DevelopmentConfig(Config):
+    """Development configuration"""
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
+        'postgresql://username:password@localhost/recipe_db_dev'
 
-    response = requests.post(url, headers=headers, json=payload)
 
-    if response.status_code != 200:
-        raise RuntimeError(f"Gemini API error: {response.status_code} - {response.text}")
+class TestingConfig(Config):
+    """Testing configuration"""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
+        'postgresql://username:password@localhost/recipe_db_test'
+    WTF_CSRF_ENABLED = False
 
-    data = response.json()
 
-    try:
-        return data["candidates"][0]["content"]["parts"][0]["text"]
-    except (KeyError, IndexError):
-        raise ValueError("Unexpected response format from Gemini API.")
+class ProductionConfig(Config):
+    """Production configuration"""
+    DEBUG = False
+    
+    @classmethod
+    def init_app(cls, app):
+        Config.init_app(app)
+        
+        # Log to stderr in production
+        import logging
+        from logging import StreamHandler
+        file_handler = StreamHandler()
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
 
-@ai_bp.route("/generate", methods=["POST"])
-@jwt_required()
-def generate_recipe():
-    data = request.get_json()
-    prompt = data.get("prompt")
-    if not prompt:
-        return jsonify({"error": "Prompt required"}), 400
-    try:
-        result = generate_recipe_idea(prompt)
-        return jsonify({"recipe": result})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+
+# Configuration mapping
+config = {
+    'development': DevelopmentConfig,
+    'testing': TestingConfig,
+    'production': ProductionConfig,
+    'default': DevelopmentConfig
+}    
